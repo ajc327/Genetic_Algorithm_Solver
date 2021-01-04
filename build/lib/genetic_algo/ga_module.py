@@ -4,11 +4,11 @@
 
 # ___________________________________
 import heapq
-from ga_settings import Number
-from ga_tools import back_to_float, quantise, visualise_population_location
-from ga_crossover import reduced_surrogates_crossover
-from demo_functions import rana
-from ga_selectors import update_rank_and_pselection, select_parents_ranking
+from .ga_settings import Number
+from .ga_tools import back_to_float, quantise, visualise_population_location
+from .ga_crossover import reduced_surrogates_crossover
+from .demo_functions import rana
+from .ga_selectors import update_rank_and_pselection, select_parents_ranking
 import numpy as np
 
 class Member():
@@ -34,7 +34,7 @@ class GASolver():
     n_dim = Number(0,100,True)
     selection_pressure = Number(1,2)
     id_count = Number(0,isint = True)
-    n_encoding_bits = Number(0, 30, isint = True)
+    n_encoding_bits = Number(1, 30, isint = True)
     n_gen_max = Number(0,500, isint = True)
     initial_population_size = Number(0,100000, isint = True)
     def __init__(self, obj_fn = None, population_size = 50, p_cross = 0.5, p_mutation = 0.005, n_dim = 2,

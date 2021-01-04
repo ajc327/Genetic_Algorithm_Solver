@@ -5,8 +5,8 @@
 # ___________________________________
 import numpy as np
 import matplotlib.pyplot as plt
-from demo_functions import rana
-from ga_crossover import reduced_surrogates_crossover
+from .demo_functions import rana
+from .ga_crossover import reduced_surrogates_crossover
 from itertools import compress
 
 def quantise(decimal_number, n_bits, upper, lower):

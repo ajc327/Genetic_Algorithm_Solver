@@ -13,4 +13,3 @@ def gen():
 
 my_gen = gen()
 
-my

@@ -3,4 +3,4 @@
 # Enter description here
 
 # ___________________________________
-from ga_module import *
+from .ga_module import *
