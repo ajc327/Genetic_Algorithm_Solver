@@ -1,0 +1,15 @@
+README.txt
+setup.py
+src/genetic_algo/__init__.py
+src/genetic_algo/demo_functions.py
+src/genetic_algo/ga_crossover.py
+src/genetic_algo/ga_module.py
+src/genetic_algo/ga_selectors.py
+src/genetic_algo/ga_settings.py
+src/genetic_algo/ga_tools.py
+src/genetic_algo/test.py
+src/genetic_algo.egg-info/PKG-INFO
+src/genetic_algo.egg-info/SOURCES.txt
+src/genetic_algo.egg-info/dependency_links.txt
+src/genetic_algo.egg-info/top_level.txt
+test/test_initialisation.py
