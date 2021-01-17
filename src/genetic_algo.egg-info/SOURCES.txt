@@ -12,4 +12,6 @@ src/genetic_algo.egg-info/PKG-INFO
 src/genetic_algo.egg-info/SOURCES.txt
 src/genetic_algo.egg-info/dependency_links.txt
 src/genetic_algo.egg-info/top_level.txt
+test/test_encoding.py
 test/test_initialisation.py
+test/test_population_initialisation.py

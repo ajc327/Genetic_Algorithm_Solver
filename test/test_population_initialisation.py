@@ -29,13 +29,6 @@ def test_fuzz_input_invariance(pop, p_cross, p_mutate, selection_pressure, n_enc
     assert all(len(j.x) == n_dim for j in solver._current_population)
 
 
-
-
-
-
-
-
-
 @pytest.fixture(name = "default")
 def create_default_solver():
     solver = GASolver(rana,population_size=50, p_cross=0.5, p_mutation=0.005, n_dim=2, n_encoding_bits=20,
