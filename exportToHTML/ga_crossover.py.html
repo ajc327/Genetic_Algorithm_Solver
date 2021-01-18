@@ -1,0 +1,60 @@
+<html>
+<head>
+<title>ga_crossover.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+.s5 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ga_crossover.py</font>
+</center></td></tr></table>
+<pre><span class="s0"># Created by Andy at 03-Jan-21</span>
+
+<span class="s0"># Enter description here</span>
+
+<span class="s0"># ___________________________________</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">from </span><span class="s1">itertools </span><span class="s2">import </span><span class="s1">compress</span>
+<span class="s2">def </span><span class="s1">reduced_surrogates_crossover(x</span><span class="s2">,</span><span class="s1">y):</span>
+    <span class="s3">'''This finds the reduced surrogates of the given bits and returns the bits and the filter'''</span>
+    <span class="s2">if </span><span class="s1">isinstance(x</span><span class="s2">, </span><span class="s1">(list</span><span class="s2">, </span><span class="s1">tuple</span><span class="s2">, </span><span class="s1">np.ndarray)):</span>
+        <span class="s2">return </span><span class="s1">[reduced_surrogates_crossover(i</span><span class="s2">,</span><span class="s1">j) </span><span class="s2">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">j </span><span class="s2">in </span><span class="s1">zip(x</span><span class="s2">,</span><span class="s1">y)]</span>
+    <span class="s1">x_only_bits = x[</span><span class="s4">2</span><span class="s1">:]</span>
+    <span class="s1">y_only_bits = y[</span><span class="s4">2</span><span class="s1">:]</span>
+    <span class="s0">#print(x)</span>
+    <span class="s0">#print(y)</span>
+    <span class="s1">reduced_surr_loc= [(int(a)+int(b))%</span><span class="s4">2 </span><span class="s2">for </span><span class="s1">a</span><span class="s2">,</span><span class="s1">b </span><span class="s2">in </span><span class="s1">zip(x_only_bits</span><span class="s2">, </span><span class="s1">y_only_bits)]</span>
+    <span class="s1">x_surr = list(compress(x_only_bits</span><span class="s2">, </span><span class="s1">reduced_surr_loc))</span>
+    <span class="s2">if </span><span class="s1">len(x_surr) &lt;</span><span class="s4">2</span><span class="s1">:</span>
+        <span class="s2">return </span><span class="s1">x</span><span class="s2">, </span><span class="s1">y</span>
+    <span class="s0">#print(reduced_surr_loc)</span>
+    <span class="s1">y_surr = list(compress(y_only_bits</span><span class="s2">, </span><span class="s1">reduced_surr_loc))</span>
+    <span class="s1">pointer = np.random.randint(</span><span class="s4">1</span><span class="s2">,</span><span class="s1">len(x_surr))</span>
+    <span class="s1">x_out =</span><span class="s5">&quot;0b&quot;</span>
+    <span class="s1">y_out =</span><span class="s5">&quot;0b&quot;</span>
+    <span class="s1">surr_counter = </span><span class="s4">0</span>
+    <span class="s0">#print(f&quot;sur pointer is {pointer}&quot;)</span>
+    <span class="s2">for </span><span class="s1">index</span><span class="s2">, </span><span class="s1">is_sur </span><span class="s2">in </span><span class="s1">enumerate(reduced_surr_loc):</span>
+
+        <span class="s2">if </span><span class="s1">is_sur </span><span class="s2">and </span><span class="s1">surr_counter &lt; pointer:</span>
+            <span class="s1">x_out += y_surr[surr_counter]</span>
+            <span class="s1">y_out += x_surr[surr_counter]</span>
+            <span class="s1">surr_counter+=</span><span class="s4">1</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">x_out += x_only_bits[index]</span>
+            <span class="s1">y_out += y_only_bits[index]</span>
+    <span class="s2">return </span><span class="s1">x_out</span><span class="s2">, </span><span class="s1">y_out</span>
+
+
+</pre>
+</body>
+</html>

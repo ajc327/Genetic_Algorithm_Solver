@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>ga_tools.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+.s5 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ga_tools.py</font>
+</center></td></tr></table>
+<pre><span class="s0"># Created by Andy at 03-Jan-21</span>
+
+<span class="s0"># Enter description here</span>
+
+<span class="s0"># ___________________________________</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">import </span><span class="s1">matplotlib.pyplot </span><span class="s2">as </span><span class="s1">plt</span>
+<span class="s2">from </span><span class="s1">.demo_functions </span><span class="s2">import </span><span class="s1">rana</span>
+<span class="s2">from </span><span class="s1">.ga_crossover </span><span class="s2">import </span><span class="s1">reduced_surrogates_crossover</span>
+<span class="s2">from </span><span class="s1">itertools </span><span class="s2">import </span><span class="s1">compress</span>
+
+<span class="s2">def </span><span class="s1">quantise(decimal_number</span><span class="s2">, </span><span class="s1">n_bits</span><span class="s2">, </span><span class="s1">upper</span><span class="s2">, </span><span class="s1">lower):</span>
+    <span class="s3">''' This quantises a number in a given range '''</span>
+    <span class="s2">if </span><span class="s1">isinstance(decimal_number</span><span class="s2">, </span><span class="s1">(list</span><span class="s2">, </span><span class="s1">tuple</span><span class="s2">, </span><span class="s1">np.ndarray)):</span>
+        <span class="s2">return </span><span class="s1">[quantise(j</span><span class="s2">, </span><span class="s1">n_bits</span><span class="s2">, </span><span class="s1">upper</span><span class="s2">, </span><span class="s1">lower) </span><span class="s2">for </span><span class="s1">j </span><span class="s2">in </span><span class="s1">decimal_number]</span>
+    <span class="s1">quantisation_step = abs(upper-lower)/(</span><span class="s4">2</span><span class="s1">**n_bits-</span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s1">quantised_int = int((decimal_number - lower)/quantisation_step)</span>
+    <span class="s1">binary_representation = format(quantised_int</span><span class="s2">, </span><span class="s5">f&quot;#0</span><span class="s2">{</span><span class="s1">n_bits+</span><span class="s4">2</span><span class="s2">}</span><span class="s5">b&quot;</span><span class="s1">)</span>
+    <span class="s2">return </span><span class="s1">binary_representation</span>
+
+<span class="s2">def </span><span class="s1">back_to_float(binary_string</span><span class="s2">, </span><span class="s1">n_bits</span><span class="s2">, </span><span class="s1">upper</span><span class="s2">, </span><span class="s1">lower):</span>
+    <span class="s3">'''reverses the binary string into an decimal number'''</span>
+    <span class="s2">if </span><span class="s1">isinstance(binary_string</span><span class="s2">, </span><span class="s1">(list</span><span class="s2">, </span><span class="s1">tuple</span><span class="s2">, </span><span class="s1">np.ndarray)):</span>
+        <span class="s2">return </span><span class="s1">[back_to_float(j</span><span class="s2">, </span><span class="s1">n_bits</span><span class="s2">, </span><span class="s1">upper</span><span class="s2">, </span><span class="s1">lower) </span><span class="s2">for </span><span class="s1">j </span><span class="s2">in </span><span class="s1">binary_string]</span>
+    <span class="s1">quantised_int = int(binary_string</span><span class="s2">, </span><span class="s4">2</span><span class="s1">)</span>
+    <span class="s1">step_size = abs(upper-lower)/(</span><span class="s4">2</span><span class="s1">**n_bits-</span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s2">return </span><span class="s1">quantised_int*step_size + lower</span>
+
+<span class="s2">def </span><span class="s1">visualise_population_location(parents</span><span class="s2">, </span><span class="s1">upper=</span><span class="s4">500</span><span class="s2">, </span><span class="s1">lower=-</span><span class="s4">500</span><span class="s1">):</span>
+    <span class="s0"># This function shows the plot</span>
+    <span class="s2">assert </span><span class="s1">len(parents[</span><span class="s4">0</span><span class="s1">].x) ==</span><span class="s4">2</span>
+
+    <span class="s1">x = np.linspace(lower</span><span class="s2">,</span><span class="s1">upper</span><span class="s2">,</span><span class="s4">300</span><span class="s1">)</span>
+    <span class="s1">y = np.linspace(lower</span><span class="s2">,</span><span class="s1">upper</span><span class="s2">,</span><span class="s4">300</span><span class="s1">)</span>
+    <span class="s1">xy = np.meshgrid(x</span><span class="s2">,</span><span class="s1">y)</span>
+    <span class="s1">X</span><span class="s2">, </span><span class="s1">Y = np.meshgrid(x</span><span class="s2">,</span><span class="s1">y)</span>
+    <span class="s1">result = rana(xy)</span>
+    <span class="s1">fig</span><span class="s2">, </span><span class="s1">ax = plt.subplots(</span><span class="s4">1</span><span class="s2">,</span><span class="s4">1</span><span class="s2">, </span><span class="s1">figsize=(</span><span class="s4">10</span><span class="s2">,</span><span class="s4">10</span><span class="s1">))</span>
+    <span class="s1">surf = ax.contourf(X</span><span class="s2">,</span><span class="s1">Y</span><span class="s2">,</span><span class="s1">result</span><span class="s2">, </span><span class="s1">levels = </span><span class="s4">50</span><span class="s2">, </span><span class="s1">cmap = </span><span class="s5">&quot;RdBu_r&quot;</span><span class="s1">)</span>
+    <span class="s1">fig.colorbar(surf</span><span class="s2">, </span><span class="s1">ax = ax)</span>
+    <span class="s1">population_locs = []</span>
+    <span class="s2">for </span><span class="s1">parent </span><span class="s2">in </span><span class="s1">parents:</span>
+        <span class="s1">population_locs.append(parent.x)</span>
+
+    <span class="s1">population_locs = list(zip(*population_locs))</span>
+    <span class="s1">ax.scatter(population_locs[</span><span class="s4">0</span><span class="s1">]</span><span class="s2">, </span><span class="s1">population_locs[</span><span class="s4">1</span><span class="s1">]</span><span class="s2">, </span><span class="s1">c = </span><span class="s5">&quot;black&quot;</span><span class="s1">)</span>
+    <span class="s1">plt.show()</span>
+
+
+
+
+<span class="s2">if </span><span class="s1">__name__ == </span><span class="s5">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">x = quantise([-</span><span class="s4">100</span><span class="s2">,</span><span class="s4">50</span><span class="s1">]</span><span class="s2">, </span><span class="s4">20</span><span class="s2">, </span><span class="s4">500</span><span class="s2">,</span><span class="s1">-</span><span class="s4">500</span><span class="s1">)</span>
+    <span class="s1">print(x)</span>
+    <span class="s1">print(reduced_surrogates_crossover(*x))</span>
+    <span class="s1">print(back_to_float(x</span><span class="s2">, </span><span class="s4">20</span><span class="s2">, </span><span class="s4">500</span><span class="s2">, </span><span class="s1">-</span><span class="s4">500</span><span class="s1">))</span>
+
+
+
+</pre>
+</body>
+</html>

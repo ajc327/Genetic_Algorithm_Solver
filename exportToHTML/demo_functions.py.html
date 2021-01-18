@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>demo_functions.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+demo_functions.py</font>
+</center></td></tr></table>
+<pre><span class="s0"># Created by Andy at 03-Jan-21</span>
+
+<span class="s0"># Enter description here</span>
+
+<span class="s0"># ___________________________________</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+
+<span class="s2">def </span><span class="s1">rana(x):</span>
+    <span class="s3">''' computes the n dimensional rana function'''</span>
+    <span class="s2">if </span><span class="s1">isinstance(x[</span><span class="s4">0</span><span class="s1">]</span><span class="s2">, </span><span class="s1">(list</span><span class="s2">, </span><span class="s1">tuple)):</span>
+        <span class="s2">return </span><span class="s1">[rana(i) </span><span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">x]</span>
+    <span class="s2">else</span><span class="s1">:</span>
+        <span class="s2">return </span><span class="s1">sum(x[i]*np.cos(np.sqrt(abs(x[i+</span><span class="s4">1</span><span class="s1">] + x[i] +</span><span class="s4">1</span><span class="s1">)))*np.sin(np.sqrt(abs(x[i+</span><span class="s4">1</span><span class="s1">] - x[</span><span class="s4">1</span><span class="s1">] +</span><span class="s4">1</span><span class="s1">)))</span>
+                   <span class="s1">+(</span><span class="s4">1</span><span class="s1">+x[i+</span><span class="s4">1</span><span class="s1">])*np.cos(np.sqrt(abs(x[i+</span><span class="s4">1</span><span class="s1">] - x[i] +</span><span class="s4">1</span><span class="s1">)))*np.sin(np.sqrt(abs(x[i+</span><span class="s4">1</span><span class="s1">] + x[i] + </span><span class="s4">1</span><span class="s1">)))</span>
+                   <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s2">,</span><span class="s1">len(x)-</span><span class="s4">1</span><span class="s1">))</span>
+</pre>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<html>
+<head>
+<title>ga_selectors.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ga_selectors.py</font>
+</center></td></tr></table>
+<pre><span class="s0"># Created by Andy at 03-Jan-21</span>
+
+<span class="s0"># Enter description here</span>
+
+<span class="s0"># ___________________________________</span>
+
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">def </span><span class="s1">update_rank_and_pselection(parents</span><span class="s2">, </span><span class="s1">s):</span>
+    <span class="s3">'''Only has side effect, updates the pselection and ranks of the parents. 
+    This is needed for the ranking based selection methods'''</span>
+    <span class="s1">parents = sorted(parents</span><span class="s2">, </span><span class="s1">key = </span><span class="s2">lambda </span><span class="s1">x: x.f_eval)</span>
+    <span class="s1">N = len(parents)</span>
+    <span class="s2">for </span><span class="s1">pos</span><span class="s2">, </span><span class="s1">member </span><span class="s2">in </span><span class="s1">enumerate(parents):</span>
+        <span class="s1">rank = pos + </span><span class="s4">1</span>
+        <span class="s1">member.rank = rank</span>
+        <span class="s1">member.probability = (s*(N+</span><span class="s4">1</span><span class="s1">-</span><span class="s4">2</span><span class="s1">*rank)+</span><span class="s4">2</span><span class="s1">*(rank-</span><span class="s4">1</span><span class="s1">))/(N*(N+</span><span class="s4">1</span><span class="s1">))</span>
+
+    <span class="s2">return None</span>
+
+<span class="s2">def </span><span class="s1">select_parents_ranking(parents):</span>
+    <span class="s3">'''takes a list of parents and select according to their selection probabilities 
+    This uses the stochastic remainder selection without replacement algorithm'''</span>
+    <span class="s1">N = len(parents)</span>
+    <span class="s0"># expected number of copies of each solution</span>
+    <span class="s1">E = [N*member.probability </span><span class="s2">for </span><span class="s1">member </span><span class="s2">in </span><span class="s1">parents]</span>
+    <span class="s0"># Each solution is selected I_i times</span>
+    <span class="s1">I = [int(np.floor(j)) </span><span class="s2">for </span><span class="s1">j </span><span class="s2">in </span><span class="s1">E]</span>
+    <span class="s0"># selected again with probability R_i</span>
+    <span class="s1">R = [a-b </span><span class="s2">for </span><span class="s1">a</span><span class="s2">, </span><span class="s1">b </span><span class="s2">in </span><span class="s1">zip(E</span><span class="s2">, </span><span class="s1">I)]</span>
+    <span class="s1">copies = []</span>
+    <span class="s1">selection_pool = []</span>
+    <span class="s2">for </span><span class="s1">expected</span><span class="s2">, </span><span class="s1">member</span><span class="s2">, </span><span class="s1">p_reselection </span><span class="s2">in </span><span class="s1">zip(I</span><span class="s2">, </span><span class="s1">parents</span><span class="s2">, </span><span class="s1">R):</span>
+        <span class="s1">selection_pool.extend([member </span><span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(expected)])</span>
+        <span class="s2">if </span><span class="s1">np.random.rand() &lt; p_reselection:</span>
+            <span class="s1">selection_pool.append(member)</span>
+
+    <span class="s2">return </span><span class="s1">selection_pool</span>
+
+
+</pre>
+</body>
+</html>

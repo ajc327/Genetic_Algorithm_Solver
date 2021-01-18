@@ -6,7 +6,8 @@
 
 import numpy as np
 def update_rank_and_pselection(parents, s):
-    '''Only has side effect, updates the pselection and ranks of the parents'''
+    '''Only has side effect, updates the pselection and ranks of the parents.
+    This is needed for the ranking based selection methods'''
     parents = sorted(parents, key = lambda x: x.f_eval)
     N = len(parents)
     for pos, member in enumerate(parents):
@@ -17,10 +18,14 @@ def update_rank_and_pselection(parents, s):
     return None
 
 def select_parents_ranking(parents):
-    '''takes a list of parents and select according to their selection probabilities'''
+    '''takes a list of parents and select according to their selection probabilities
+    This uses the stochastic remainder selection without replacement algorithm'''
     N = len(parents)
+    # expected number of copies of each solution
     E = [N*member.probability for member in parents]
+    # Each solution is selected I_i times
     I = [int(np.floor(j)) for j in E]
+    # selected again with probability R_i
     R = [a-b for a, b in zip(E, I)]
     copies = []
     selection_pool = []

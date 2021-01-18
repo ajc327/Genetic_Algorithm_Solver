@@ -65,7 +65,7 @@ class GASolver():
         print(f"GA solver initialised with population size {self.initial_population_size}")
 
     def initialise_population(self):
-        ''' This generates initial population.  '''
+        ''' This generates initial population using random generation '''
 
         self._n_gen = 0
         self._current_population = []
@@ -92,8 +92,10 @@ class GASolver():
 
 
     def gen_new_pop(self):
+        '''generates the new population from the pool of parents'''
         new_gen = []
         while len(new_gen) < self.population_size:
+            # select the parents
             husband, wife = np.random.choice(self._selection_pool, 2, replace=False)
             # maybe cross over
             if np.random.rand() < self.p_cross:
@@ -107,7 +109,6 @@ class GASolver():
             for i in range(self.n_dim):
                 for indx, (a,b) in enumerate(zip(bin_child1[i], bin_child2[i])):
                     # maybe mutate
-                    #print(f"index is at {indx}, processing {a,b}, i = {i}")
                     if np.random.rand()< self.p_mutation and indx > 2:
                         mutated_1[i] += str(int(not int(a)))
                         mutated_2[i] += str(int(not int(b)))
@@ -144,6 +145,7 @@ class GASolver():
         except:
             pass
     def run(self):
+        '''method for solving the function with the given parameters'''
         for i in range(self._n_gen_max):
             self._selection_pool = self.select_from_population()
             self.update_selected_parents()
@@ -151,7 +153,7 @@ class GASolver():
             self.replace_old_gen(new_gen)
         return self._current_population, self._best_sols
     def step(self):
-        '''for visualisation purpose mainly'''
+        '''for visualisation purpose mainly. When this is called the solver advances one generation'''
         for i in range(self._n_gen_max):
             self._selection_pool = self.select_from_population()
             self.update_selected_parents()
@@ -166,7 +168,7 @@ if __name__ == "__main__":
 
 
     def test1():
-
+        '''deprecated tests '''
         solver = GASolver(obj_fn=rana, population_size=100, p_cross=0.5, p_mutation=0.005,
                           n_dim=2)
         my_gen= solver.step()

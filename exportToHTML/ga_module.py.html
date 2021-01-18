@@ -1,0 +1,212 @@
+<html>
+<head>
+<title>ga_module.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6a8759;}
+.s5 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+ga_module.py</font>
+</center></td></tr></table>
+<pre><span class="s0"># Created by Andy at 03-Jan-21</span>
+
+<span class="s0"># Enter description here</span>
+
+<span class="s0"># ___________________________________</span>
+<span class="s2">import </span><span class="s1">heapq</span>
+<span class="s2">from </span><span class="s1">.ga_settings </span><span class="s2">import </span><span class="s1">Number</span>
+<span class="s2">from </span><span class="s1">.ga_tools </span><span class="s2">import </span><span class="s1">back_to_float</span><span class="s2">, </span><span class="s1">quantise</span><span class="s2">, </span><span class="s1">visualise_population_location</span>
+<span class="s2">from </span><span class="s1">.ga_crossover </span><span class="s2">import </span><span class="s1">reduced_surrogates_crossover</span>
+<span class="s2">from </span><span class="s1">.demo_functions </span><span class="s2">import </span><span class="s1">rana</span>
+<span class="s2">from </span><span class="s1">.ga_selectors </span><span class="s2">import </span><span class="s1">update_rank_and_pselection</span><span class="s2">, </span><span class="s1">select_parents_ranking</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">class </span><span class="s1">Member():</span>
+    <span class="s3">''' 
+    This class defines the attributes of a member in the population. 
+    '''</span>
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">mem_id=</span><span class="s2">None, </span><span class="s1">x=</span><span class="s2">None, </span><span class="s1">f_eval=</span><span class="s2">None, </span><span class="s1">encoded=</span><span class="s2">None, </span><span class="s1">rank=</span><span class="s2">None, </span><span class="s1">selected=</span><span class="s2">False, </span><span class="s1">flag = </span><span class="s4">&quot;black&quot;</span><span class="s1">):</span>
+        <span class="s1">self.id = mem_id</span>
+        <span class="s1">self.x = x</span>
+        <span class="s1">self.f_eval = f_eval</span>
+        <span class="s1">self.encoded = encoded</span>
+        <span class="s1">self.rank = rank</span>
+        <span class="s1">self.selected = selected</span>
+        <span class="s1">self.probability = </span><span class="s2">None</span>
+        <span class="s1">self.flag = flag</span>
+    <span class="s2">def </span><span class="s1">__repr__(self):</span>
+        <span class="s2">return </span><span class="s4">f&quot;point id </span><span class="s2">{</span><span class="s1">self.id</span><span class="s2">}</span><span class="s4">, function value </span><span class="s2">{</span><span class="s1">self.f_eval</span><span class="s2">}</span><span class="s4">&quot;</span>
+
+<span class="s2">class </span><span class="s1">GASolver():</span>
+    <span class="s3">'''Solver class for Genetic algorithm.'''</span>
+
+    <span class="s0"># Define the various parameters using descriptor classes to guard against invalide inputs</span>
+    <span class="s1">population_size = Number(</span><span class="s5">1</span><span class="s2">,</span><span class="s5">1000</span><span class="s2">,</span><span class="s1">isint= </span><span class="s2">True</span><span class="s1">)</span>
+    <span class="s1">p_cross = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s5">1</span><span class="s1">)</span>
+    <span class="s1">p_mutation = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s5">1</span><span class="s1">)</span>
+    <span class="s1">n_dim = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s5">100</span><span class="s2">,True</span><span class="s1">)</span>
+    <span class="s1">selection_pressure = Number(</span><span class="s5">1</span><span class="s2">,</span><span class="s5">2</span><span class="s1">)</span>
+    <span class="s1">id_count = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s1">isint = </span><span class="s2">True</span><span class="s1">)</span>
+    <span class="s1">n_encoding_bits = Number(</span><span class="s5">1</span><span class="s2">, </span><span class="s5">30</span><span class="s2">, </span><span class="s1">isint = </span><span class="s2">True</span><span class="s1">)</span>
+    <span class="s1">n_gen_max = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s5">500</span><span class="s2">, </span><span class="s1">isint = </span><span class="s2">True</span><span class="s1">)</span>
+    <span class="s1">initial_population_size = Number(</span><span class="s5">0</span><span class="s2">,</span><span class="s5">100000</span><span class="s2">, </span><span class="s1">isint = </span><span class="s2">True</span><span class="s1">)</span>
+    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">obj_fn = </span><span class="s2">None, </span><span class="s1">population_size = </span><span class="s5">50</span><span class="s2">, </span><span class="s1">p_cross = </span><span class="s5">0.5</span><span class="s2">, </span><span class="s1">p_mutation = </span><span class="s5">0.005</span><span class="s2">, </span><span class="s1">n_dim = </span><span class="s5">2</span><span class="s2">,</span>
+                 <span class="s1">n_encoding_bits = </span><span class="s5">20</span><span class="s2">, </span><span class="s1">selection_pressure = </span><span class="s5">1.5</span><span class="s2">, </span><span class="s1">n_gen_max = </span><span class="s5">50</span><span class="s2">, </span><span class="s1">initial_population_size = </span><span class="s5">500</span><span class="s2">,</span>
+                 <span class="s1">random_seed = </span><span class="s2">None</span><span class="s1">):</span>
+        <span class="s1">self.population_size = population_size</span>
+        <span class="s1">self.initial_population_size = initial_population_size</span>
+        <span class="s1">self.p_cross = p_cross</span>
+        <span class="s1">self.p_mutation = p_mutation</span>
+        <span class="s1">self.obj_fn = obj_fn</span>
+        <span class="s1">self.n_dim = n_dim</span>
+        <span class="s1">self.selection_pressure = selection_pressure</span>
+        <span class="s1">self._current_population = []</span>
+        <span class="s1">self._selection_pool = []</span>
+        <span class="s1">self.id_count = </span><span class="s5">0</span>
+        <span class="s1">self.n_encoding_bits = n_encoding_bits</span>
+        <span class="s1">self._upper = </span><span class="s5">500</span>
+        <span class="s1">self._lower = -</span><span class="s5">500</span>
+        <span class="s1">self._n_gen = </span><span class="s5">0</span>
+        <span class="s1">self.n_gen_max = n_gen_max</span>
+        <span class="s1">self._best_sols = []</span>
+        <span class="s1">self._n_best_sols = </span><span class="s5">10</span>
+        <span class="s1">self._random_seed = random_seed</span>
+        <span class="s1">self.initialise_population()</span>
+
+        <span class="s1">print(</span><span class="s4">f&quot;GA solver initialised with population size </span><span class="s2">{</span><span class="s1">self.initial_population_size</span><span class="s2">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">initialise_population(self):</span>
+        <span class="s3">''' This generates initial population.  '''</span>
+
+        <span class="s1">self._n_gen = </span><span class="s5">0</span>
+        <span class="s1">self._current_population = []</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self.initial_population_size):</span>
+            <span class="s0"># This generates the input vector for each member of the initial population using an uniform distribution</span>
+            <span class="s1">random_input = np.random.uniform(self._lower</span><span class="s2">, </span><span class="s1">self._upper</span><span class="s2">, </span><span class="s1">size = self.n_dim)</span>
+            <span class="s1">self._current_population.append(Member(mem_id = i</span><span class="s2">, </span><span class="s1">x= random_input</span><span class="s2">, </span><span class="s1">f_eval=self.obj_fn(random_input)))</span>
+            <span class="s1">self.id_count += </span><span class="s5">1</span>
+        <span class="s1">self._current_population = sorted(self._current_population</span><span class="s2">, </span><span class="s1">key = </span><span class="s2">lambda </span><span class="s1">x: x.f_eval)</span>
+        <span class="s1">self._current_population[</span><span class="s5">0</span><span class="s1">].flag = </span><span class="s4">&quot;cyan&quot;</span>
+
+    <span class="s2">def </span><span class="s1">select_from_population(self):</span>
+        <span class="s3">'''This selects from the member members using the specified selection scheme'''</span>
+        <span class="s1">update_rank_and_pselection(parents=self._current_population</span><span class="s2">, </span><span class="s1">s=self.selection_pressure)</span>
+        <span class="s1">selection_pool = select_parents_ranking(self._current_population)</span>
+        <span class="s2">return </span><span class="s1">selection_pool</span>
+
+    <span class="s2">def </span><span class="s1">update_selected_parents(self):</span>
+        <span class="s3">'''this prepares the selected parents for the crossover by encoding the x position'''</span>
+        <span class="s2">for </span><span class="s1">parent </span><span class="s2">in </span><span class="s1">set(self._selection_pool):</span>
+            <span class="s1">parent.encoded = quantise(parent.x</span><span class="s2">, </span><span class="s1">self.n_encoding_bits</span><span class="s2">, </span><span class="s1">upper = self._upper</span><span class="s2">, </span><span class="s1">lower = self._lower)</span>
+        <span class="s2">return</span>
+
+
+
+    <span class="s2">def </span><span class="s1">gen_new_pop(self):</span>
+        <span class="s3">'''generates the new population from the pool of parents'''</span>
+        <span class="s1">new_gen = []</span>
+        <span class="s2">while </span><span class="s1">len(new_gen) &lt; self.population_size:</span>
+            <span class="s0"># select the parents</span>
+            <span class="s1">husband</span><span class="s2">, </span><span class="s1">wife = np.random.choice(self._selection_pool</span><span class="s2">, </span><span class="s5">2</span><span class="s2">, </span><span class="s1">replace=</span><span class="s2">False</span><span class="s1">)</span>
+            <span class="s0"># maybe cross over</span>
+            <span class="s2">if </span><span class="s1">np.random.rand() &lt; self.p_cross:</span>
+                <span class="s1">bin_child1</span><span class="s2">, </span><span class="s1">bin_child2 = tuple(zip(*reduced_surrogates_crossover(husband.encoded</span><span class="s2">, </span><span class="s1">wife.encoded)))</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">bin_child1</span><span class="s2">, </span><span class="s1">bin_child2 = husband.encoded</span><span class="s2">, </span><span class="s1">wife.encoded</span>
+
+            <span class="s1">mutated_1 = [</span><span class="s4">&quot;&quot;</span><span class="s1">]*len(bin_child1)</span>
+            <span class="s1">mutated_2 = [</span><span class="s4">&quot;&quot;</span><span class="s1">]*len(bin_child2)</span>
+            <span class="s0">#print(bin_child2)</span>
+            <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self.n_dim):</span>
+                <span class="s2">for </span><span class="s1">indx</span><span class="s2">, </span><span class="s1">(a</span><span class="s2">,</span><span class="s1">b) </span><span class="s2">in </span><span class="s1">enumerate(zip(bin_child1[i]</span><span class="s2">, </span><span class="s1">bin_child2[i])):</span>
+                    <span class="s0"># maybe mutate</span>
+                    <span class="s2">if </span><span class="s1">np.random.rand()&lt; self.p_mutation </span><span class="s2">and </span><span class="s1">indx &gt; </span><span class="s5">2</span><span class="s1">:</span>
+                        <span class="s1">mutated_1[i] += str(int(</span><span class="s2">not </span><span class="s1">int(a)))</span>
+                        <span class="s1">mutated_2[i] += str(int(</span><span class="s2">not </span><span class="s1">int(b)))</span>
+                    <span class="s2">else</span><span class="s1">:</span>
+                        <span class="s1">mutated_1[i] += a</span>
+                        <span class="s1">mutated_2[i] += b</span>
+
+            <span class="s0"># Converts the binary encoding of the children back into float represntation and convert to member class</span>
+            <span class="s1">x_child1 = back_to_float(mutated_1</span><span class="s2">,</span><span class="s1">self.n_encoding_bits</span><span class="s2">,</span><span class="s1">self._upper</span><span class="s2">, </span><span class="s1">self._lower)</span>
+            <span class="s1">x_child2 = back_to_float(mutated_2</span><span class="s2">,</span><span class="s1">self.n_encoding_bits</span><span class="s2">,</span><span class="s1">self._upper</span><span class="s2">, </span><span class="s1">self._lower)</span>
+            <span class="s1">child1 = Member(mem_id=self.id_count</span><span class="s2">, </span><span class="s1">x = x_child1</span><span class="s2">, </span><span class="s1">f_eval=self.obj_fn(x_child1))</span>
+            <span class="s1">self.id_count+=</span><span class="s5">1</span>
+            <span class="s1">child2 = Member(mem_id=self.id_count</span><span class="s2">, </span><span class="s1">x = x_child2</span><span class="s2">, </span><span class="s1">f_eval=self.obj_fn(x_child2))</span>
+            <span class="s1">self.id_count+=</span><span class="s5">1</span>
+            <span class="s1">new_gen.extend([child1</span><span class="s2">, </span><span class="s1">child2])</span>
+        <span class="s2">return </span><span class="s1">new_gen</span>
+
+    <span class="s2">def </span><span class="s1">replace_old_gen(self</span><span class="s2">, </span><span class="s1">new_gen):</span>
+        <span class="s3">'''Contains side effects on the class, updates the existing generation with the new generation'''</span>
+
+        <span class="s0"># Find the best solution</span>
+        <span class="s1">self._current_population = sorted(new_gen</span><span class="s2">, </span><span class="s1">key = </span><span class="s2">lambda </span><span class="s1">x: x.f_eval)</span>
+        <span class="s1">best = self._current_population[</span><span class="s5">0</span><span class="s1">]</span>
+        <span class="s1">best.flag = </span><span class="s4">&quot;cyan&quot;</span>
+        <span class="s1">print(</span><span class="s4">f&quot;best found is </span><span class="s2">{</span><span class="s1">best.f_eval</span><span class="s2">}</span><span class="s4">&quot;</span><span class="s1">)</span>
+        <span class="s1">self._n_gen +=</span><span class="s5">1</span>
+
+        <span class="s0"># maintains the length of the best solutions found list</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">len(self._best_sols) &lt; self._n_best_sols:</span>
+                <span class="s1">heapq.heappush(self._best_sols</span><span class="s2">, </span><span class="s1">(-best.f_eval</span><span class="s2">, </span><span class="s1">best))</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">heapq.heappushpop(self._best_sols</span><span class="s2">, </span><span class="s1">(-best.f_eval</span><span class="s2">, </span><span class="s1">best))</span>
+        <span class="s2">except</span><span class="s1">:</span>
+            <span class="s2">pass</span>
+    <span class="s2">def </span><span class="s1">run(self):</span>
+        <span class="s3">'''method for solving the function with the given parameters'''</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self._n_gen_max):</span>
+            <span class="s1">self._selection_pool = self.select_from_population()</span>
+            <span class="s1">self.update_selected_parents()</span>
+            <span class="s1">new_gen = self.gen_new_pop()</span>
+            <span class="s1">self.replace_old_gen(new_gen)</span>
+        <span class="s2">return </span><span class="s1">self._current_population</span><span class="s2">, </span><span class="s1">self._best_sols</span>
+    <span class="s2">def </span><span class="s1">step(self):</span>
+        <span class="s3">'''for visualisation purpose mainly. When this is called the solver advances one generation'''</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self._n_gen_max):</span>
+            <span class="s1">self._selection_pool = self.select_from_population()</span>
+            <span class="s1">self.update_selected_parents()</span>
+            <span class="s1">new_gen = self.gen_new_pop()</span>
+            <span class="s1">self.replace_old_gen(new_gen)</span>
+            <span class="s1">print(self._n_gen)</span>
+            <span class="s2">yield </span><span class="s1">self._current_population</span>
+
+
+<span class="s2">if </span><span class="s1">__name__ == </span><span class="s4">&quot;__main__&quot;</span><span class="s1">:</span>
+
+
+
+    <span class="s2">def </span><span class="s1">test1():</span>
+        <span class="s3">'''deprecated tests '''</span>
+        <span class="s1">solver = GASolver(obj_fn=rana</span><span class="s2">, </span><span class="s1">population_size=</span><span class="s5">100</span><span class="s2">, </span><span class="s1">p_cross=</span><span class="s5">0.5</span><span class="s2">, </span><span class="s1">p_mutation=</span><span class="s5">0.005</span><span class="s2">,</span>
+                          <span class="s1">n_dim=</span><span class="s5">2</span><span class="s1">)</span>
+        <span class="s1">my_gen= solver.step()</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s5">10</span><span class="s1">):</span>
+            <span class="s2">for </span><span class="s1">j </span><span class="s2">in </span><span class="s1">range(</span><span class="s5">10</span><span class="s1">):</span>
+                <span class="s1">population = next(my_gen)</span>
+
+            <span class="s1">visualise_population_location(population</span><span class="s2">, </span><span class="s1">solver._upper</span><span class="s2">, </span><span class="s1">solver._lower)</span>
+
+    <span class="s2">def </span><span class="s1">test2():</span>
+        <span class="s1">solver = GASolver(obj_fn=rana</span><span class="s2">, </span><span class="s1">population_size=</span><span class="s5">100</span><span class="s2">, </span><span class="s1">p_cross=</span><span class="s5">0.5</span><span class="s2">, </span><span class="s1">n_dim=</span><span class="s5">5</span><span class="s2">, </span><span class="s1">n_gen_max=</span><span class="s5">50</span><span class="s2">, </span><span class="s1">p_mutation=</span><span class="s5">0.01</span><span class="s2">,</span>
+                          <span class="s1">selection_pressure=</span><span class="s5">1.9</span><span class="s2">, </span><span class="s1">initial_population_size=</span><span class="s5">1000</span><span class="s1">)</span>
+        <span class="s1">final</span><span class="s2">, </span><span class="s1">best_sols = solver.run()</span>
+        <span class="s1">final = sorted(final</span><span class="s2">, </span><span class="s1">key = </span><span class="s2">lambda </span><span class="s1">x: x.f_eval)</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s5">5</span><span class="s1">):</span>
+            <span class="s1">print(final[i])</span>
+        <span class="s1">print()</span>
+        <span class="s2">for </span><span class="s1">sol </span><span class="s2">in </span><span class="s1">best_sols:</span>
+            <span class="s1">print(sol)</span>
+    <span class="s1">test2()</span></pre>
+</body>
+</html>

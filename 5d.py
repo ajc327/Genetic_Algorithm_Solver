@@ -1,17 +1,12 @@
 # Created by Andy at 17-Jan-21
 
-# Enter description here
+# contains the code for running the 5d optimisation runs.
 
 # ___________________________________
 
 
 from genetic_algo import *
 import matplotlib.pyplot as plt
-solver_proposed = GASolver(obj_fn=rana, population_size=100, p_cross=0.45, p_mutation=0.005,
-                  n_dim=5, n_gen_max=60, initial_population_size=100)
-
-solver_default = GASolver(obj_fn=rana, population_size=50, p_cross=0.6, p_mutation=0.001,
-                  n_dim=5, n_gen_max=60, initial_population_size=50)
 
 
 
@@ -20,6 +15,7 @@ prop_list = []
 default_list = []
 
 for i in range(20):
+    # run the optimiser 20 times and record the best result
     solver_proposed = GASolver(obj_fn=rana, population_size=100, p_cross=0.45, p_mutation=0.005,
                                n_dim=5, n_gen_max=60, initial_population_size=100)
 

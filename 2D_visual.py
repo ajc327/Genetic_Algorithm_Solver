@@ -1,6 +1,6 @@
 # Created by Andy at 16-Jan-21
 
-# Enter description here
+# Contains code for visualising the 2d rana's function
 
 # ___________________________________
 
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 np.random.seed(1)
 
 def visualise_population_location(parents, upper=500, lower=-500, ax = None, plot_colorbar = False ):
-    # This function shows the plot
+    # first generate a contour plot of the 2d rana's function
     assert len(parents[0].x) ==2
     parents = parents[::-1]
     x = np.linspace(lower,upper,300)
@@ -20,6 +20,8 @@ def visualise_population_location(parents, upper=500, lower=-500, ax = None, plo
     surf = ax.contourf(X,Y,result, levels = 50, cmap = "RdBu_r")
     if plot_colorbar:
         fig.colorbar(surf, ax = ax)
+
+    # scatter the entire population on the contour plot
     population_locs = [parent.x for parent in parents]
     colors = [parent.flag for parent in parents]
     population_locs = list(zip(*population_locs))
